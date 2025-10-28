@@ -1,4 +1,4 @@
-print("hi")
+#print("hi")
 
 infile = open("Project2.csv")
 records = infile.readlines()
