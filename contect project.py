@@ -1,6 +1,6 @@
 #print("hi")
 
-infile = open("Project2.csv")
+infile = open("project for data science.csv")
 records = infile.readlines()
 def main():
     # Clear screen
