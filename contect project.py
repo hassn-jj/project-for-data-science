@@ -5,7 +5,7 @@
 import csv
 
 # --- Load CSV file ---
-infile = open("project for data science.csv", "r", encoding="utf-8-sig")
+infile = open("‏‏project for data science - 000.csv", "r", encoding="utf-8-sig")
 reader = csv.DictReader(infile)
 records = list(reader)
 
