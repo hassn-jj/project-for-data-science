@@ -2,73 +2,141 @@
 
 # Student Name, ID(  Hassan Al-Zahrani,451401862  __ Yasser Abdullah Alsaidlani,451401188 __ Hashem Jamal Alsaidalani,451400324 __Mohammed Abdulla Alshehri,451400125 )
 
-import csv
+import pandas as pd 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 
-# --- Load CSV file ---
-infile = open("‏‏project for data science - 000.csv", "r", encoding="utf-8-sig")
-reader = csv.DictReader(infile)
-records = list(reader)
+#-------------------------------------------------
+# قراءة الملف كسطور + DataFrame
+#-------------------------------------------------
+
+df = pd.read_csv("titanic.csv", sep=';')
+
+# تجهيز الأعمار
+df["Age"] = df["Age"].fillna(df["Age"].mean())
+
+# تجهيز التصنيف للهيت ماب
+df["Category"] = df.apply(
+    lambda r: "Child" if r["Age"] <= 18 else ("Female" if r["Sex"] == "female" else "Male"),
+    axis=1
+)
+
+#-------------------------------------------------
+# واجهات البرنامج
+#-------------------------------------------------
 
 def main():
-    # Clear screen
-    print("\n" * 10)
-
-    # Display header
-    print("*******CONTENT*******LIST*******SYSTEM*******PROJECT*******")
-    print("************************************************************")
-    print("\n==================MAIN MENU==================")
-    
-    # Menu options
+    print("\n" * 5)
+    print("******CONTENT*******LIST*******SYSTEM*******PROJECT**********")
+    print("**************************************************************")
+    print("\n================MAIN MENU================")
     print("1. Content List Menu")
     print("2. Exit")
-    print("============================================")
+    print("=========================================")
 
 
 def menu():
-    print("\n==================CONTENT LIST MENU==================")
-    print("1. Show all content")
-    print("2. Add New Contact")
-    print("3. Search Contact")
-    print("4. Delete Contact")
-    print("5. Back to Main Menu")
-    print("=====================================================")
+    print("\n" * 3)
+    print("\n================CONTENT LIST MENU================")
+    print("1. Descriptive Statistics (describe)")
+    print("2. Survival Heatmap (Titanic)")
+    print("3. Linear Regression Model (Prediction)")
+    print("4. Back To The Main Menu")
+    print("=========================================")
 
+
+#-------------------------------------------------
+# بداية البرنامج
+#-------------------------------------------------
 
 main()
 option = int(input("Please select your option(1-2): "))
 
-while option != 2:
+while option != 2:     # Exit
     if option == 1:
         menu()
-        option = int(input("Please select your option(1-5): "))
-        while option != 5:
-            if option == 1:  
-                for i in range(0,6):                           
-                    
-                    record = records[i].strip().split(";")
-                    #for x in range(2, 30, 3):
+        sub_option = int(input("Please select your option(1-4): "))
 
+        while sub_option != 4:   # Back to main menu
 
-                    if i != 0 and len(record)==3:
-                        print("Name:", record[0])
-                        print("Phone:", record[1])
-                        print("Email:", record[2], "\n")
-    
+            #===========================================================
+            # 1) Descriptive Statistics
+            #===========================================================
+            if sub_option == 1:
+                print("\n====== Descriptive Statistics ======\n")
+                print(df.describe())
 
-            elif option == 2:  
-                print("\n====== Add New Contact ======")     
-                Name = input("Enter Name: ")
+            #===========================================================
+            # 2) Survival Heatmap
+            #===========================================================
+            elif sub_option == 2:
+                print("\n====== Survival Heatmap (Titanic) ======\n")
+
+                heatmap_data = df.pivot_table(
+                    values="Survived",
+                    index="Pclass",
+                    columns="Category",
+                    aggfunc="mean"
+                ) * 100
+
+                sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", fmt=".1f")
+                plt.title("Survival Heatmap (Pclass × Category)")
+                plt.xlabel("Category")
+                plt.ylabel("Pclass")
+                plt.show()
+
+            #===========================================================
+            # 3) Linear Regression Model
+            #===========================================================
+            elif sub_option == 3:
+                print("\n====== Linear Regression Model (Titanic) ======\n")
+
+                # Classify function
+                def classify(row):
+                    if row["Age"] < 18:
+                        return 0
+                    else:
+                        return 1 if row["Sex"] == "female" else 2
+
+                df["RegCat"] = df.apply(classify, axis=1)
+
+                # اختيار المتغيرات
+                X = df[["Pclass", "RegCat"]]
+                y = df["Survived"]
+
+                # تقسيم البيانات
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.40, random_state=42
+                )
+
+                # تدريب النموذج
+                model = LinearRegression()
+                model.fit(X_train, y_train)
+
+                # المعادلة
+                a = model.intercept_
+                b1, b2 = model.coef_
+
+                print("Regression Equation:")
+                print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
+
+                # الدقة
+                score = model.score(X_test, y_test)
+                print("\nModel Accuracy (R^2):", round(score, 4))
+
+            else:
+                print("Invalid input!")
+
+            menu()
+            sub_option = int(input("Please select your option(1-4): "))
+
     else:
-        print("Oh be cearful!")
-        break
-        
+        print("Invalid input!")
 
+    main()
+    option = int(input("Please select your option(1-2): "))
 
-        
-#Milestone 1
-  
-#Milestone 2
-
-#Milestone 3
-
-#Milestone 4
+print("\nThanks for using our program.")
