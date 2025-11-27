@@ -6,11 +6,14 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 #-------------------------------------------------
-# قراءة الملف كسطور + DataFrame
+# قراءة الملف + DataFrame
 #-------------------------------------------------
 
 df = pd.read_csv("titanic.csv", sep=';')
@@ -44,7 +47,8 @@ def menu():
     print("1. Descriptive Statistics (describe)")
     print("2. Survival Heatmap (Titanic)")
     print("3. Linear Regression Model (Prediction)")
-    print("4. Back To The Main Menu")
+    print("4. Logistic Regression 2")
+    print("5. Back To The Main Menu")
     print("=========================================")
 
 
@@ -58,9 +62,10 @@ option = int(input("Please select your option(1-2): "))
 while option != 2:     # Exit
     if option == 1:
         menu()
-        sub_option = int(input("Please select your option(1-4): "))
+        sub_option = int(input("Please select your option(1-5): "))
 
-        while sub_option != 4:   # Back to main menu
+        # 5 = Back to main menu
+        while sub_option != 5:   
 
             #===========================================================
             # 1) Descriptive Statistics
@@ -94,64 +99,125 @@ while option != 2:     # Exit
             elif sub_option == 3:
                 print("\n====== Linear Regression Model (Titanic) ======\n")
 
-    # Classify function
-    def classify(row):
-        if row["Age"] < 18:
-            return 0
-        else:
-            return 1 if row["Sex"] == "female" else 2
+                # Classify function for regression category
+                def classify_reg(row):
+                    if row["Age"] < 18:
+                        return 0
+                    else:
+                        return 1 if row["Sex"] == "female" else 2
 
-    df["RegCat"] = df.apply(classify, axis=1)
+                df["RegCat"] = df.apply(classify_reg, axis=1)
 
-    # ================================
-    #  👇 NEW: Ask user for parameters
-    # ================================
-    print("\nEnter your custom settings (press Enter to use default):\n")
+                # إدخال إعدادات المستخدم
+                print("\nEnter your custom settings (press Enter to use default):\n")
 
-    # test_size
-    user_test_size = input("Enter test_size (default = 0.40): ")
-    if user_test_size.strip() == "":
-        test_size = 0.40
-    else:
-        test_size = float(user_test_size)
+                user_test_size = input("Enter test_size (default = 0.40): ")
+                if user_test_size.strip() == "":
+                    test_size = 0.40
+                else:
+                    test_size = float(user_test_size)
 
-    # random_state
-    user_random_state = input("Enter random_state (default = 42): ")
-    if user_random_state.strip() == "":
-        random_state = 42
-    else:
-        random_state = int(user_random_state)
+                user_random_state = input("Enter random_state (default = 42): ")
+                if user_random_state.strip() == "":
+                    random_state = 42
+                else:
+                    random_state = int(user_random_state)
 
-    print(f"\nUsing: test_size = {test_size}, random_state = {random_state}\n")
+                print(f"\nUsing: test_size = {test_size}, random_state = {random_state}\n")
 
-    # اختيار المتغيرات
-    X = df[["Pclass", "RegCat"]]
-    y = df["Survived"]
+                # اختيار المتغيرات
+                X = df[["Pclass", "RegCat"]]
+                y = df["Survived"]
 
-    # تقسيم البيانات
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state
-    )
+                # تقسيم البيانات
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=test_size, random_state=random_state
+                )
 
-    # تدريب النموذج
-    model = LinearRegression()
-    model.fit(X_train, y_train)
+                # تدريب النموذج
+                model = LinearRegression()
+                model.fit(X_train, y_train)
 
-    # المعادلة
-    a = model.intercept_
-    b1, b2 = model.coef_
+                # المعادلة
+                a = model.intercept_
+                b1, b2 = model.coef_
 
-    print("Regression Equation:")
-    print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
+                print("Regression Equation:")
+                print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
 
-    # الدقة
-    score = model.score(X_test, y_test)
-    print("\nModel Accuracy (R^2):", round(score, 4))
+                # الدقة
+                score = model.score(X_test, y_test)
+                print("\nModel Accuracy (R^2):", round(score, 4))
+
+            #===========================================================
+            # 4) Logistic Regression 2
+            #===========================================================
+            elif sub_option == 4:
+                print("\n====== Logistic Regression 2 (Titanic) ======\n")
+
+                # نسخة للعمل عليها
+                df2 = df.copy()
+
+                # تحويل المتغيرات إلى أرقام
+                df2['Survived'] = pd.to_numeric(df2['Survived'], errors='coerce')
+                df2['Pclass']   = pd.to_numeric(df2['Pclass'],   errors='coerce')
+                df2['Age']      = pd.to_numeric(df2['Age'],      errors='coerce')
+
+                df2['Sex'] = df2['Sex'].astype(str).str.strip().str.lower()
+                sex_map = {'female': 1, 'male': 0}
+                df2['SexNum'] = df2['Sex'].map(sex_map)
+
+                features = [
+                    ('Age',    'Age'),
+                    ('SexNum', 'Sex (0=Male, 1=Female)'),
+                    ('Pclass', 'Pclass')
+                ]
+
+                for col, nice_name in features:
+
+                    data = df2[[col, 'Survived']].dropna().copy()
+                    if data.empty:
+                        print(f"Feature = {nice_name}: No valid data after removing NaN.\n")
+                        continue
+
+                    X = data[[col]].values
+                    y = data['Survived'].astype(int).values
+
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        X, y, test_size=0.35, random_state=42, stratify=y
+                    )
+
+                    print("="*70)
+                    print(f"Feature = {nice_name}  (n={len(data)})")
+                    print("-"*70)
+
+                    # Logistic Regression
+                    log_model = LogisticRegression(max_iter=1000)
+                    log_model.fit(X_train, y_train)
+                    y_pred_log = log_model.predict(X_test)
+
+                    print("[Logistic Regression]")
+                    print("Accuracy:", round(accuracy_score(y_test, y_pred_log), 4))
+                    print(classification_report(y_test, y_pred_log, digits=4))
+                    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_log))
+                    print("-"*70)
+
+                    # Decision Tree
+                    tree_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+                    tree_model.fit(X_train, y_train)
+                    y_pred_tree = tree_model.predict(X_test)
+
+                    print("[Decision Tree]")
+                    print("Accuracy:", round(accuracy_score(y_test, y_pred_tree), 4))
+                    print(classification_report(y_test, y_pred_tree, digits=4))
+                    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
+                    print("="*70, "\n")
+
             else:
                 print("Invalid input!")
 
             menu()
-            sub_option = int(input("Please select your option(1-4): "))
+            sub_option = int(input("Please select your option(1-5): "))
 
     else:
         print("Invalid input!")
