@@ -94,39 +94,59 @@ while option != 2:     # Exit
             elif sub_option == 3:
                 print("\n====== Linear Regression Model (Titanic) ======\n")
 
-                # Classify function
-                def classify(row):
-                    if row["Age"] < 18:
-                        return 0
-                    else:
-                        return 1 if row["Sex"] == "female" else 2
+    # Classify function
+    def classify(row):
+        if row["Age"] < 18:
+            return 0
+        else:
+            return 1 if row["Sex"] == "female" else 2
 
-                df["RegCat"] = df.apply(classify, axis=1)
+    df["RegCat"] = df.apply(classify, axis=1)
 
-                # اختيار المتغيرات
-                X = df[["Pclass", "RegCat"]]
-                y = df["Survived"]
+    # ================================
+    #  👇 NEW: Ask user for parameters
+    # ================================
+    print("\nEnter your custom settings (press Enter to use default):\n")
 
-                # تقسيم البيانات
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y, test_size=0.40, random_state=42
-                )
+    # test_size
+    user_test_size = input("Enter test_size (default = 0.40): ")
+    if user_test_size.strip() == "":
+        test_size = 0.40
+    else:
+        test_size = float(user_test_size)
 
-                # تدريب النموذج
-                model = LinearRegression()
-                model.fit(X_train, y_train)
+    # random_state
+    user_random_state = input("Enter random_state (default = 42): ")
+    if user_random_state.strip() == "":
+        random_state = 42
+    else:
+        random_state = int(user_random_state)
 
-                # المعادلة
-                a = model.intercept_
-                b1, b2 = model.coef_
+    print(f"\nUsing: test_size = {test_size}, random_state = {random_state}\n")
 
-                print("Regression Equation:")
-                print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
+    # اختيار المتغيرات
+    X = df[["Pclass", "RegCat"]]
+    y = df["Survived"]
 
-                # الدقة
-                score = model.score(X_test, y_test)
-                print("\nModel Accuracy (R^2):", round(score, 4))
+    # تقسيم البيانات
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
 
+    # تدريب النموذج
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    # المعادلة
+    a = model.intercept_
+    b1, b2 = model.coef_
+
+    print("Regression Equation:")
+    print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
+
+    # الدقة
+    score = model.score(X_test, y_test)
+    print("\nModel Accuracy (R^2):", round(score, 4))
             else:
                 print("Invalid input!")
 
