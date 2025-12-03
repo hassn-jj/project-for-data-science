@@ -32,7 +32,7 @@ df["Category"] = df.apply(
 #-------------------------------------------------
 def main():
     print("\n" * 5)
-    print("******CONTENT*******LIST*******SYSTEM*******PROJECT**********")
+    print("*************LIST*******SYSTEM*******PROJECT**********")
     print("**************************************************************")
     print("\n================MAIN MENU================")
     print("1. Content List Menu")
@@ -42,7 +42,7 @@ def main():
 
 def menu():
     print("\n" * 3)
-    print("\n================CONTENT LIST MENU================")
+    print("\n============= LIST MENU ================")
     print("1. Descriptive Statistics (describe)")
     print("2. Hypothesis Testing (H0 / H1)")
     print("3. Linear Regression Model (All)")
