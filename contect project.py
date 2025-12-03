@@ -289,7 +289,7 @@ while option != 2:     # Exit
                     aggfunc="mean"
                 ) * 100
 
-                sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", fmt=".1f")
+                sns.heatmap(heatmap_data, annot=True, cmap="coolwarm_r", fmt=".1f")
                 plt.title("Survival Heatmap (Pclass × Category)")
                 plt.xlabel("Category")
                 plt.ylabel("Pclass")
