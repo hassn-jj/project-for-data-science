@@ -1,8 +1,8 @@
-# Let's get started and get the full grade as A PROFESSIONAL ENGINEER :) 
+# Let's get started and get the full grade as A PROFESSIONAL ENGINEER :)
 
 # Student Name, ID(  Hassan Al-Zahrani,451401862  __ Yasser Abdullah Alsaidlani,451401188 __ Hashem Jamal Alsaidalani,451400324 __Mohammed Abdulla Alshehri,451400125 )
 
-import pandas as pd 
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,10 +18,10 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 
 df = pd.read_csv("titanic.csv", sep=';')
 
-# Age preparation
+# تجهيز الأعمار
 df["Age"] = df["Age"].fillna(df["Age"].mean())
 
-# Preparing the classification for Hitmap
+# تجهيز التصنيف للهيت ماب
 df["Category"] = df.apply(
     lambda r: "Child" if r["Age"] <= 18 else ("Female" if r["Sex"] == "female" else "Male"),
     axis=1
@@ -30,7 +30,6 @@ df["Category"] = df.apply(
 #-------------------------------------------------
 # Program interfaces
 #-------------------------------------------------
-
 def main():
     print("\n" * 5)
     print("******CONTENT*******LIST*******SYSTEM*******PROJECT**********")
@@ -48,7 +47,8 @@ def menu():
     print("2. Survival Heatmap (Titanic)")
     print("3. Linear Regression Model (Prediction)")
     print("4. Logistic Regression 2")
-    print("5. Back To The Main Menu")
+    print("5. Hypothesis Testing (H0 / H1)")
+    print("6. Back To The Main Menu")
     print("=========================================")
 
 
@@ -62,10 +62,10 @@ option = int(input("Please select your option(1-2): "))
 while option != 2:     # Exit
     if option == 1:
         menu()
-        sub_option = int(input("Please select your option(1-5): "))
+        sub_option = int(input("Please select your option(1-6): "))
 
-        # 5 = Back to main menu
-        while sub_option != 5:   
+        # 6 = Back to main menu
+        while sub_option != 6:
 
             #===========================================================
             # 1) Descriptive Statistics
@@ -73,6 +73,10 @@ while option != 2:     # Exit
             if sub_option == 1:
                 print("\n====== Descriptive Statistics ======\n")
                 print(df.describe())
+                print("\t\t")
+                print(df.info())
+                print("\t\t")
+                print(df.isnull().sum())
 
             #===========================================================
             # 2) Survival Heatmap
@@ -108,7 +112,7 @@ while option != 2:     # Exit
 
                 df["RegCat"] = df.apply(classify_reg, axis=1)
 
-                # Enter user settings
+                 # Enter user settings
                 print("\nEnter your custom settings (press Enter to use default):\n")
 
                 user_test_size = input("Enter test_size (default = 0.40): ")
@@ -129,12 +133,12 @@ while option != 2:     # Exit
                 X = df[["Pclass", "RegCat"]]
                 y = df["Survived"]
 
-                # Data segmentation
+                 # Data segmentation
                 X_train, X_test, y_train, y_test = train_test_split(
                     X, y, test_size=test_size, random_state=random_state
                 )
 
-                # Model training
+                 # Model training
                 model = LinearRegression()
                 model.fit(X_train, y_train)
 
@@ -155,10 +159,10 @@ while option != 2:     # Exit
             elif sub_option == 4:
                 print("\n====== Logistic Regression 2 (Titanic) ======\n")
 
-                # نسخة للعمل عليها
+               # Working version
                 df2 = df.copy()
 
-                # تحويل المتغيرات إلى أرقام
+                # Converting variables to numbers
                 df2['Survived'] = pd.to_numeric(df2['Survived'], errors='coerce')
                 df2['Pclass']   = pd.to_numeric(df2['Pclass'],   errors='coerce')
                 df2['Age']      = pd.to_numeric(df2['Age'],      errors='coerce')
@@ -213,11 +217,24 @@ while option != 2:     # Exit
                     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
                     print("="*70, "\n")
 
+            #===========================================================
+            # 5) Hypothesis Testing (H₀ / H₁)
+            #===========================================================
+            elif sub_option == 5:
+                print("\n====== Hypothesis Testing (H₀ / H₁) ======\n")
+
+                print("    Null Hypothesis (H₀):")
+                print("There is no significant relationship between passenger characteristics and survival.")
+                print()
+                print("    Alternative Hypothesis (H₁):")
+                print("Passenger characteristics including gender, class, and age significantly affect survival chances.")
+                print()
+
             else:
                 print("Invalid input!")
 
             menu()
-            sub_option = int(input("Please select your option(1-5): "))
+            sub_option = int(input("Please select your option(1-6): "))
 
     else:
         print("Invalid input!")
