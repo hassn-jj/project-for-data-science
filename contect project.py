@@ -13,22 +13,22 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 #-------------------------------------------------
-# قراءة الملف + DataFrame
+# Read the file + DataFrame
 #-------------------------------------------------
 
 df = pd.read_csv("titanic.csv", sep=';')
 
-# تجهيز الأعمار
+# Age preparation
 df["Age"] = df["Age"].fillna(df["Age"].mean())
 
-# تجهيز التصنيف للهيت ماب
+# Preparing the classification for Hitmap
 df["Category"] = df.apply(
     lambda r: "Child" if r["Age"] <= 18 else ("Female" if r["Sex"] == "female" else "Male"),
     axis=1
 )
 
 #-------------------------------------------------
-# واجهات البرنامج
+# Program interfaces
 #-------------------------------------------------
 
 def main():
@@ -53,7 +53,7 @@ def menu():
 
 
 #-------------------------------------------------
-# بداية البرنامج
+# Program start
 #-------------------------------------------------
 
 main()
@@ -108,7 +108,7 @@ while option != 2:     # Exit
 
                 df["RegCat"] = df.apply(classify_reg, axis=1)
 
-                # إدخال إعدادات المستخدم
+                # Enter user settings
                 print("\nEnter your custom settings (press Enter to use default):\n")
 
                 user_test_size = input("Enter test_size (default = 0.40): ")
@@ -125,27 +125,27 @@ while option != 2:     # Exit
 
                 print(f"\nUsing: test_size = {test_size}, random_state = {random_state}\n")
 
-                # اختيار المتغيرات
+                # Selecting variables
                 X = df[["Pclass", "RegCat"]]
                 y = df["Survived"]
 
-                # تقسيم البيانات
+                # Data segmentation
                 X_train, X_test, y_train, y_test = train_test_split(
                     X, y, test_size=test_size, random_state=random_state
                 )
 
-                # تدريب النموذج
+                # Model training
                 model = LinearRegression()
                 model.fit(X_train, y_train)
 
-                # المعادلة
+                # The equation
                 a = model.intercept_
                 b1, b2 = model.coef_
 
                 print("Regression Equation:")
                 print(f"Y = {a:.4f} + {b1:.4f} * Pclass + {b2:.4f} * Category")
 
-                # الدقة
+                # Accuracy
                 score = model.score(X_test, y_test)
                 print("\nModel Accuracy (R^2):", round(score, 4))
 
