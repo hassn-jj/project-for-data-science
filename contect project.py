@@ -18,10 +18,10 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 
 df = pd.read_csv("titanic.csv", sep=';')
 
-# تجهيز الأعمار
+# Preparing Ages
 df["Age"] = df["Age"].fillna(df["Age"].mean())
 
-# تجهيز التصنيف للهيت ماب
+# Preparing the classification for the heatmap
 df["Category"] = df.apply(
     lambda r: "Child" if r["Age"] <= 18 else ("Female" if r["Sex"] == "female" else "Male"),
     axis=1
@@ -45,10 +45,11 @@ def menu():
     print("\n================CONTENT LIST MENU================")
     print("1. Descriptive Statistics (describe)")
     print("2. Survival Heatmap (Titanic)")
-    print("3. Linear Regression Model (Prediction)")
-    print("4. Logistic Regression 2")
-    print("5. Hypothesis Testing (H0 / H1)")
-    print("6. Back To The Main Menu")
+    print("3. Linear Regression Model (All)")
+    print("4. Logistic Regression (All)")
+    print("5. Logistic Regression Separation")
+    print("6. Hypothesis Testing (H0 / H1)")
+    print("7. Back To The Main Menu")
     print("=========================================")
 
 
@@ -62,10 +63,10 @@ option = int(input("Please select your option(1-2): "))
 while option != 2:     # Exit
     if option == 1:
         menu()
-        sub_option = int(input("Please select your option(1-6): "))
+        sub_option = int(input("Please select your option(1-7): "))
 
-        # 6 = Back to main menu
-        while sub_option != 6:
+        # 7 = Back to main menu
+        while sub_option != 7:
 
             #===========================================================
             # 1) Descriptive Statistics
@@ -73,9 +74,9 @@ while option != 2:     # Exit
             if sub_option == 1:
                 print("\n====== Descriptive Statistics ======\n")
                 print(df.describe())
-                print("\t\t")
-                print(df.info())
-                print("\t\t")
+                print("\n------ Data Info ------")
+                df.info()
+                print("\n------ Missing Values per Column ------")
                 print(df.isnull().sum())
 
             #===========================================================
@@ -112,7 +113,7 @@ while option != 2:     # Exit
 
                 df["RegCat"] = df.apply(classify_reg, axis=1)
 
-                 # Enter user settings
+                # Enter user settings
                 print("\nEnter your custom settings (press Enter to use default):\n")
 
                 user_test_size = input("Enter test_size (default = 0.40): ")
@@ -133,12 +134,12 @@ while option != 2:     # Exit
                 X = df[["Pclass", "RegCat"]]
                 y = df["Survived"]
 
-                 # Data segmentation
+                # Data segmentation
                 X_train, X_test, y_train, y_test = train_test_split(
                     X, y, test_size=test_size, random_state=random_state
                 )
 
-                 # Model training
+                # Model training
                 model = LinearRegression()
                 model.fit(X_train, y_train)
 
@@ -154,22 +155,22 @@ while option != 2:     # Exit
                 print("\nModel Accuracy (R^2):", round(score, 4))
 
             #===========================================================
-            # 4) Logistic Regression 2
+            # 4) Logistic Regression (All)
             #===========================================================
             elif sub_option == 4:
-                print("\n====== Logistic Regression 2 (Titanic) ======\n")
+                print("\n====== Logistic Regression (All) (Titanic) ======\n")
 
-               # Working version
-                df2 = df.copy()
+                # Working version
+                df = df.copy()
 
                 # Converting variables to numbers
-                df2['Survived'] = pd.to_numeric(df2['Survived'], errors='coerce')
-                df2['Pclass']   = pd.to_numeric(df2['Pclass'],   errors='coerce')
-                df2['Age']      = pd.to_numeric(df2['Age'],      errors='coerce')
+                df['Survived'] = pd.to_numeric(df['Survived'], errors='coerce')
+                df['Pclass']   = pd.to_numeric(df['Pclass'],   errors='coerce')
+                df['Age']      = pd.to_numeric(df['Age'],      errors='coerce')
 
-                df2['Sex'] = df2['Sex'].astype(str).str.strip().str.lower()
+                df['Sex'] = df['Sex'].astype(str).str.strip().str.lower()
                 sex_map = {'female': 1, 'male': 0}
-                df2['SexNum'] = df2['Sex'].map(sex_map)
+                df['SexNum'] = df['Sex'].map(sex_map)
 
                 features = [
                     ('Age',    'Age'),
@@ -179,7 +180,7 @@ while option != 2:     # Exit
 
                 for col, nice_name in features:
 
-                    data = df2[[col, 'Survived']].dropna().copy()
+                    data = df[[col, 'Survived']].dropna().copy()
                     if data.empty:
                         print(f"Feature = {nice_name}: No valid data after removing NaN.\n")
                         continue
@@ -218,9 +219,71 @@ while option != 2:     # Exit
                     print("="*70, "\n")
 
             #===========================================================
-            # 5) Hypothesis Testing (H₀ / H₁)
+            # 5) Logistic Regression Separation
             #===========================================================
             elif sub_option == 5:
+                print("\n====== Logistic Regression Separation (Titanic) ======\n")
+
+                df_sep = df.copy()
+
+                df_sep['Survived'] = pd.to_numeric(df_sep['Survived'], errors='coerce')
+                df_sep['Pclass']   = pd.to_numeric(df_sep['Pclass'],   errors='coerce')
+                df_sep['Age']      = pd.to_numeric(df_sep['Age'],      errors='coerce')
+
+                df_sep['Sex'] = df_sep['Sex'].astype(str).str.strip().str.lower()
+                sex_map = {'female': 1, 'male': 0}
+                df_sep['SexNum'] = df_sep['Sex'].map(sex_map)
+
+                features_sep = [
+                    ('Age',    'Age'),
+                    ('SexNum', 'Sex (0=Male, 1=Female)'),
+                    ('Pclass', 'Pclass')
+                ]
+
+                for col, nice_name in features_sep:
+
+                    data = df_sep[[col, 'Survived']].dropna().copy()
+                    if data.empty:
+                        print(f"Feature = {nice_name}: No valid data after removing NaN.\n")
+                        continue
+
+                    X = data[[col]].values
+                    y = data['Survived'].astype(int).values
+
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        X, y, test_size=0.35, random_state=42, stratify=y
+                    )
+
+                    print("="*70)
+                    print(f"Feature = {nice_name}  (n={len(data)})")
+                    print("="*70)
+
+                    # Logistic Regression
+                    log_model = LogisticRegression(max_iter=1000)
+                    log_model.fit(X_train, y_train)
+                    y_pred_log = log_model.predict(X_test)
+
+                    print("[Logistic Regression]")
+                    print("Accuracy:", round(accuracy_score(y_test, y_pred_log), 4))
+                    print(classification_report(y_test, y_pred_log, digits=4))
+                    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_log))
+                    print("-"*70)
+
+                    # Decision Tree
+                    tree_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+                    tree_model.fit(X_train, y_train)
+                    y_pred_tree = tree_model.predict(X_test)
+
+                    print("[Decision Tree]")
+                    print("Accuracy:", round(accuracy_score(y_test, y_pred_tree), 4))
+                    print(classification_report(y_test, y_pred_tree, digits=4))
+                    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
+                    print("="*70, "\n")
+
+            #===========================================================
+            # 6) Hypothesis Testing (H₀ / H₁)
+            #===========================================================
+            elif sub_option == 6:
                 print("\n====== Hypothesis Testing (H₀ / H₁) ======\n")
 
                 print("    Null Hypothesis (H₀):")
@@ -234,7 +297,7 @@ while option != 2:     # Exit
                 print("Invalid input!")
 
             menu()
-            sub_option = int(input("Please select your option(1-6): "))
+            sub_option = int(input("Please select your option(1-7): "))
 
     else:
         print("Invalid input!")
