@@ -44,11 +44,11 @@ def menu():
     print("\n" * 3)
     print("\n================CONTENT LIST MENU================")
     print("1. Descriptive Statistics (describe)")
-    print("2. Survival Heatmap (Titanic)")
+    print("2. Hypothesis Testing (H0 / H1)")
     print("3. Linear Regression Model (All)")
     print("4. Logistic Regression (All)")
     print("5. Logistic Regression Separation")
-    print("6. Hypothesis Testing (H0 / H1)")
+    print("6. Survival Heatmap (Titanic)")
     print("7. Back To The Main Menu")
     print("=========================================")
 
@@ -79,24 +79,19 @@ while option != 2:     # Exit
                 print("\n------ Missing Values per Column ------")
                 print(df.isnull().sum())
 
+
             #===========================================================
-            # 2) Survival Heatmap
+            # 2) Hypothesis Testing (H₀ / H₁)
             #===========================================================
             elif sub_option == 2:
-                print("\n====== Survival Heatmap (Titanic) ======\n")
+                print("\n====== Hypothesis Testing (H₀ / H₁) ======\n")
 
-                heatmap_data = df.pivot_table(
-                    values="Survived",
-                    index="Pclass",
-                    columns="Category",
-                    aggfunc="mean"
-                ) * 100
-
-                sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", fmt=".1f")
-                plt.title("Survival Heatmap (Pclass × Category)")
-                plt.xlabel("Category")
-                plt.ylabel("Pclass")
-                plt.show()
+                print("    Null Hypothesis (H₀):")
+                print("There is no significant relationship between passenger characteristics and survival.")
+                print()
+                print("    Alternative Hypothesis (H₁):")
+                print("Passenger characteristics including gender, class, and age significantly affect survival chances.")
+                print()
 
             #===========================================================
             # 3) Linear Regression Model
@@ -280,19 +275,25 @@ while option != 2:     # Exit
                     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
                     print("="*70, "\n")
 
+            
             #===========================================================
-            # 6) Hypothesis Testing (H₀ / H₁)
+            # 6) Survival Heatmap
             #===========================================================
             elif sub_option == 6:
-                print("\n====== Hypothesis Testing (H₀ / H₁) ======\n")
+                print("\n====== Survival Heatmap (Titanic) ======\n")
 
-                print("    Null Hypothesis (H₀):")
-                print("There is no significant relationship between passenger characteristics and survival.")
-                print()
-                print("    Alternative Hypothesis (H₁):")
-                print("Passenger characteristics including gender, class, and age significantly affect survival chances.")
-                print()
+                heatmap_data = df.pivot_table(
+                    values="Survived",
+                    index="Pclass",
+                    columns="Category",
+                    aggfunc="mean"
+                ) * 100
 
+                sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", fmt=".1f")
+                plt.title("Survival Heatmap (Pclass × Category)")
+                plt.xlabel("Category")
+                plt.ylabel("Pclass")
+                plt.show()
             else:
                 print("Invalid input!")
 
