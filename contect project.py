@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import roc_auc_score, roc_curve
 
 #-------------------------------------------------
 # Read the file + DataFrame
@@ -35,7 +36,7 @@ def main():
     print("*************LIST*******SYSTEM*******PROJECT**********")
     print("**************************************************************")
     print("\n================MAIN MENU================")
-    print("1. Content List Menu")
+    print("1. List Menu")
     print("2. Exit")
     print("=========================================")
 
@@ -49,7 +50,8 @@ def menu():
     print("4. Logistic Regression (All)")
     print("5. Logistic Regression Separation")
     print("6. Survival Heatmap (Titanic)")
-    print("7. Back To The Main Menu")
+    print("7. Correlation Matrix (numeric)")
+    print("8. Back To The Main Menu")
     print("=========================================")
 
 
@@ -63,21 +65,22 @@ option = int(input("Please select your option(1-2): "))
 while option != 2:     # Exit
     if option == 1:
         menu()
-        sub_option = int(input("Please select your option(1-7): "))
+        sub_option = int(input("Please select your option(1-8): "))
 
-        # 7 = Back to main menu
-        while sub_option != 7:
+        # 8 = Back to main menu
+        while sub_option != 8:
 
             #===========================================================
             # 1) Descriptive Statistics
             #===========================================================
             if sub_option == 1:
+                cf = pd.read_csv("titanic(AutoRecovered).csv", sep=';')
                 print("\n====== Descriptive Statistics ======\n")
-                print(df.describe())
+                print(cf.describe())
                 print("\n------ Data Info ------")
-                df.info()
+                cf.info()
                 print("\n------ Missing Values per Column ------")
-                print(df.isnull().sum())
+                print(cf.isnull().sum())
 
 
             #===========================================================
@@ -186,15 +189,23 @@ while option != 2:     # Exit
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=0.35, random_state=42, stratify=y
                     )
+                    #ROC-AUC for Logistic Regression
+                    y_prob_log = log_model.predict_proba(X_test)[:, 1]
+                    print("ROC-AUC (Logistic):", round(roc_auc_score(y_test, y_prob_log), 4)) 
 
                     print("="*70)
                     print(f"Feature = {nice_name}  (n={len(data)})")
                     print("-"*70)
 
+
+
                     # Logistic Regression
                     log_model = LogisticRegression(max_iter=1000)
                     log_model.fit(X_train, y_train)
                     y_pred_log = log_model.predict(X_test)
+                    
+
+                   
 
                     print("[Logistic Regression]")
                     print("Accuracy:", round(accuracy_score(y_test, y_pred_log), 4))
@@ -206,6 +217,10 @@ while option != 2:     # Exit
                     tree_model = DecisionTreeClassifier(max_depth=3, random_state=42)
                     tree_model.fit(X_train, y_train)
                     y_pred_tree = tree_model.predict(X_test)
+
+                    #ROC-AUC for Decision Tree
+                    y_prob_tree = tree_model.predict_proba(X_test)[:, 1]
+                    print("ROC-AUC (Decision Tree):", round(roc_auc_score(y_test, y_prob_tree), 4))
 
                     print("[Decision Tree]")
                     print("Accuracy:", round(accuracy_score(y_test, y_pred_tree), 4))
@@ -248,6 +263,10 @@ while option != 2:     # Exit
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=0.35, random_state=42, stratify=y
                     )
+                    #ROC-AUC for Logistic Regression
+                    y_prob_log = log_model.predict_proba(X_test)[:, 1]
+                    print("ROC-AUC (Logistic):", round(roc_auc_score(y_test, y_prob_log), 4)) 
+
 
                     print("="*70)
                     print(f"Feature = {nice_name}  (n={len(data)})")
@@ -269,13 +288,18 @@ while option != 2:     # Exit
                     tree_model.fit(X_train, y_train)
                     y_pred_tree = tree_model.predict(X_test)
 
+                    #ROC-AUC for Decision Tree
+                    y_prob_tree = tree_model.predict_proba(X_test)[:, 1]
+                    print("ROC-AUC (Decision Tree):", round(roc_auc_score(y_test, y_prob_tree), 4))
+
+
                     print("[Decision Tree]")
                     print("Accuracy:", round(accuracy_score(y_test, y_pred_tree), 4))
                     print(classification_report(y_test, y_pred_tree, digits=4))
                     print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_tree))
                     print("="*70, "\n")
 
-            
+
             #===========================================================
             # 6) Survival Heatmap
             #===========================================================
@@ -294,17 +318,42 @@ while option != 2:     # Exit
                 plt.xlabel("Category")
                 plt.ylabel("Pclass")
                 plt.show()
+
+            #===========================================================
+            #7) Correlation Matrix (numeric)
+            #===========================================================
+            elif sub_option == 7:
+                print("\n====== Correlation Matrix (numeric) ======\n")
+
+                #Convert 'Sex' into numeric values
+                df['Sex'] = df['Sex'].astype(str).str.strip().str.lower()
+                sex_map = {'female': 1, 'male': 0}
+                df['Gender'] = df['Sex'].map(sex_map)
+
+                #Select only numeric columns
+                num_cols = ['Survived', 'Pclass', 'Age', 'Gender']
+                corr = df[num_cols].corr()
+
+                #Print correlation values
+                print(corr.round(3))
+                print()
+
+                #Plot correlation heatmap
+                plt.figure(figsize=(6, 5))
+                sns.heatmap(corr, annot=True, cmap="coolwarm_r", vmin=-1, vmax=1)
+                plt.title("Correlation Matrix")
+                plt.show()
             else:
                 print("Invalid input!")
 
             menu()
             sub_option = int(input("Please select your option(1-7): "))
 
+
     else:
         print("Invalid input!")
 
     main()
     option = int(input("Please select your option(1-2): "))
-
 
 print("\nThanks for using our program.")
